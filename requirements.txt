@@ -1,0 +1,4 @@
+pandas
+clickhouse-driver
+dbt-core
+dbt-clickhouse

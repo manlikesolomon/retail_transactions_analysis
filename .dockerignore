@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.dockerignore
+.git
+.gitignore
+.dags_backup/
+logs/
+clickhouse-data/
+clickhouse-logs/
