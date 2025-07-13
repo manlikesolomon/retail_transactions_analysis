@@ -1,4 +1,10 @@
+psycopg2-binary
 pandas
 clickhouse-driver
 dbt-core
 dbt-clickhouse
+apache-airflow-providers-common-sql
+airflow-clickhouse-plugin
+apache-airflow==3.0.2
+apache-airflow-providers-postgres
+apache-airflow-providers-redis
