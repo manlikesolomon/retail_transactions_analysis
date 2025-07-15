@@ -6,6 +6,9 @@ from airflow_clickhouse_plugin.hooks.clickhouse import ClickHouseHook
 import pandas as pd
 import numpy as np
 import os
+import csv
+import ast
+from datetime import datetime
 
 
 FILE_PATH = 'data/raw/Retail_Transactions_Dataset.csv'
@@ -17,24 +20,36 @@ def check_file_exists(path=FILE_PATH):
         raise FileNotFoundError(f'File not found {path}')
     return True
 
-def flatten_cell(cell):
-    # Convert list/tuple/np.ndarray to string recursively
-    if isinstance(cell, (list, tuple, np.ndarray)):
-        # Convert each element to string recursively, then join with comma (or just str(cell))
-        return str(cell)
-    return cell
 
 @task(task_id="load_data_from_csv")
 def load_data_from_csv():
-    import numpy as np
     hook = ClickHouseHook(clickhouse_conn_id=CLICKHOUSE_CONNECTION_ID)
     client = hook.get_conn()
-    df = pd.read_csv(FILE_PATH)
-    df = df.applymap(flatten_cell)
 
-    client.insert_dataframe(
-        'INSERT INTO raw.retail_transactions VALUES', df
-    )
+    values = []
+    with open(FILE_PATH, newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            product_list = ast.literal_eval(row["Product"])
+            product_string = ", ".join(product_list) if isinstance(product_list, list) else str(product_list)
+            values.append((
+                int(row["Transaction_ID"]),
+                datetime.strptime(row["Date"], "%Y-%m-%d %H:%M:%S"),
+                row["Customer_Name"],
+                product_string,
+                int(row["Total_Items"]),
+                float(row["Total_Cost"]),
+                row["Payment_Method"],
+                row["City"],
+                row["Store_Type"],
+                int(row["Discount_Applied"] == "True"),
+                row["Customer_Category"],
+                row["Season"],
+                row["Promotion"] if row["Promotion"] else ""
+            ))
+
+    insert_sql = "INSERT INTO raw.retail_transactions VALUES"
+    client.execute(insert_sql, values)
 
 
 default_args = {
@@ -90,7 +105,3 @@ def load_clickhouse():
     start() >> check_file_task >> create_table >> load_data >> end()
 
 dag = load_clickhouse()
-
-
-
-
