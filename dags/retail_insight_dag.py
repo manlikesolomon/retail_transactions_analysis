@@ -28,7 +28,8 @@ def generate_sql_task(task_id, sql_file):
         sql_path = f"{SQL_FILE_PATH}{sql_file}"
         with open(sql_path, 'r') as f:
             sql_script = f.read()
-        hook.run(sql_script)
+        client = hook.get_conn()
+        client.execute(sql_script)
     return run_sql()
 
 @dag(
