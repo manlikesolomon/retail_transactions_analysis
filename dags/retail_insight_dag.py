@@ -36,7 +36,7 @@ def generate_sql_task(task_id, sql_file):
     schedule='@daily',
     default_args=default_args,
     max_active_runs=1
-):
+)
 def get_retail_transaction_metrics():
 
     @task(task_id='start')
