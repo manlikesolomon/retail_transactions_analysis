@@ -17,7 +17,7 @@ def run_query(query):
         query (str): The SQL query to execute.
         
     Returns:
-        list: The result of the query as a list of dictionaries.
+        DataFrame(pandas): The result of the query as a pandas DataFrame.
     """
     client = get_client()
     return client.query_df(query)
