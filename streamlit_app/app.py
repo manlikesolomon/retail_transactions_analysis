@@ -2,6 +2,16 @@ import streamlit as st
 from utils import run_query
 import pandas as pd
 import altair as alt
+import os
+from pathlib import Path
+
+def fallback_to_csv(query_name):
+    try:
+        path = Path("fallback_data") / f"{query_name}.csv"
+        return pd.read_csv(path)
+    except FileNotFoundError:
+        st.error(f"Fallback CSV for `{query_name}` not found.")
+        return pd.DataFrame()
 
 st.set_page_config(page_title="Retail Transactions Analysis", layout="wide")
 
@@ -25,8 +35,11 @@ with tabs[0]:
                 order by `Total Transaction Value` desc
                 limit 20
     '''
-
-    df_top_customers = run_query(top_customers_query)
+    try:
+        df_top_customers = run_query(top_customers_query)
+    except Exception:
+        
+        df_top_customers = fallback_to_csv("top_customers")
     st.dataframe(df_top_customers)
 
     st.subheader("📈 Promotion Responsiveness (Scatter Plot)")
@@ -42,7 +55,11 @@ with tabs[0]:
                 having Promo_Transactions >= 5 and Total_Transactions >= 5
                 order by Promo_Response_Rate desc
     '''
-    df_promo = run_query(promo_query)
+    try:
+        df_promo = run_query(promo_query)
+    except Exception:
+        
+        df_promo = fallback_to_csv("promo_response")
 
     scatter = alt.Chart(df_promo).mark_circle().encode(
         x='Total_Transactions:Q',
@@ -80,6 +97,36 @@ with tabs[0]:
 
     st.altair_chart(donut, use_container_width=True)
 
+    st.subheader("🔥 Customer Loyalty Score")
+
+    loyalty_query = '''
+                SELECT 
+                    Customer_Name,
+                    COUNT() AS Total_Transactions,
+                    max(Date) AS Last_Transaction_Date,
+                    dateDiff('day', max(Date), now()) AS Days_Since_Last_Purchase,
+                    round(COUNT() / (1 + dateDiff('day', max(Date), now())), 2) AS Loyalty_Score
+                FROM raw.retail_transactions
+                GROUP BY Customer_Name
+                ORDER BY Loyalty_Score DESC
+                LIMIT 20
+    '''
+    try:
+        df_loyalty = run_query(loyalty_query)
+    except Exception:
+        
+        df_loyalty = fallback_to_csv("loyalty_score")
+
+    loyalty_chart = alt.Chart(df_loyalty).mark_bar().encode(
+        x=alt.X('Customer_Name:N', sort='-y'),
+        y='Loyalty_Score:Q',
+        tooltip=['Customer_Name', 'Total_Transactions', 'Last_Transaction_Date', 'Days_Since_Last_Purchase', 'Loyalty_Score']
+    ).properties(
+        title='Top 20 Loyal Customers'
+    )
+
+    st.altair_chart(loyalty_chart, use_container_width=True)
+
 with tabs[1]:
     st.header("🗺️ City-Level Metrics")
     metrics_query = '''
@@ -91,7 +138,11 @@ with tabs[1]:
                 from summary.daily_city_metrics
                 group by City
         '''
-    df_city = run_query(metrics_query)
+    try:
+        df_city = run_query(metrics_query)
+    except Exception:
+        
+        df_city = fallback_to_csv("city_metrics")
     st.dataframe(df_city)
     chart = alt.Chart(df_city).mark_bar().encode(
         x=alt.X('City', sort='-y'),
@@ -114,8 +165,11 @@ with tabs[1]:
                 group by City, Year
                 order by Year, City
         '''
-    
-    df_yoy = run_query(yoy_query)
+    try:
+        df_yoy = run_query(yoy_query)
+    except Exception:
+        
+        df_yoy = fallback_to_csv("yoy_city")
     
     selected_city = st.selectbox("Select a City", sorted(df_yoy["City"].unique()))
     city_df = df_yoy[df_yoy["City"] == selected_city]
@@ -150,7 +204,11 @@ with tabs[2]:
                     round(avg(Total_Items), 2) as `Average Cart Size`
                 from raw.retail_transactions
                 group by Payment_Method'''
-    df_payment = run_query(metrics_query)
+    try:
+        df_payment = run_query(metrics_query)
+    except Exception:
+        
+        df_payment = fallback_to_csv("payment_metrics")
     st.dataframe(df_payment)
 
     st.subheader("📊 Year-on-Year Payment Method Trends")
@@ -165,7 +223,11 @@ with tabs[2]:
                 group by Year, Payment_Method
                 order by Year, Payment_Method
     '''
-    df_yoy_payment = run_query(yoy_payment_query)
+    try:
+        df_yoy_payment = run_query(yoy_payment_query)
+    except Exception:
+        
+        df_yoy_payment = fallback_to_csv("yoy_payment")
 
     payment_selected = st.selectbox("Select a Payment Method", sorted(df_yoy_payment["Payment_Method"].unique()))
     payment_df = df_yoy_payment[df_yoy_payment["Payment_Method"] == payment_selected]
@@ -189,3 +251,27 @@ with tabs[2]:
     )
 
     st.altair_chart(combined_chart, use_container_width=True)
+
+    st.subheader("💸 Average Transaction Value by Payment Method")
+
+    avg_tx_query = '''
+            SELECT 
+                Payment_Method,
+                ROUND(SUM(Total_Cost)/COUNT(), 2) AS Avg_Transaction_Value
+            FROM raw.retail_transactions
+            GROUP BY Payment_Method
+    '''
+    try:
+        df_avg_tx = run_query(avg_tx_query)
+    except Exception:
+        df_avg_tx = fallback_to_csv("avg_tx_by_payment")
+
+    bar_chart = alt.Chart(df_avg_tx).mark_bar().encode(
+        x=alt.X('Payment_Method:N', sort='-y'),
+        y='Avg_Transaction_Value:Q',
+        tooltip=['Payment_Method', 'Avg_Transaction_Value']
+    ).properties(
+        title='Average Transaction Value by Payment Method'
+    )
+
+    st.altair_chart(bar_chart, use_container_width=True)
