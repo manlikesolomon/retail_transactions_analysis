@@ -1,0 +1,5 @@
+"Payment_Method","Transaction Count","Total Transaction Value","Average Cart Size"
+Cash,250230,13133235.3,5.49
+Mobile Payment,249711,13103003.92,5.5
+Debit Card,250074,13095216.24,5.49
+Credit Card,249985,13123764.94,5.5

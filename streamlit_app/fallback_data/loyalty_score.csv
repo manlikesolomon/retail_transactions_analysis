@@ -1,0 +1,21 @@
+"Customer_Name","Total_Transactions","Last_Transaction_Date","Days_Since_Last_Purchase","Loyalty_Score"
+Michael Smith,454,2024-05-16 10:21:05,431,1.05
+Michael Johnson,341,2024-05-14 15:02:25,433,0.79
+James Smith,337,2024-05-16 16:59:21,431,0.78
+David Smith,309,2024-05-16 15:58:21,431,0.72
+Michael Williams,304,2024-05-14 18:12:28,433,0.7
+Christopher Smith,301,2024-05-18 16:50:19,429,0.7
+John Smith,288,2024-05-15 21:45:28,432,0.67
+Michael Jones,285,2024-05-15 14:30:26,432,0.66
+Michael Brown,274,2024-05-17 06:08:46,430,0.64
+Robert Smith,275,2024-05-14 05:50:22,433,0.63
+Jennifer Smith,269,2024-05-16 20:53:23,431,0.62
+David Johnson,260,2024-05-14 19:43:48,433,0.6
+Christopher Johnson,256,2024-05-08 06:34:08,439,0.58
+James Johnson,251,2024-05-17 15:11:42,430,0.58
+Matthew Smith,241,2024-04-29 02:47:01,448,0.54
+John Johnson,237,2024-05-12 21:55:27,435,0.54
+David Brown,228,2024-05-17 20:53:58,430,0.53
+Jennifer Johnson,234,2024-05-06 12:52:24,441,0.53
+Michael Davis,223,2024-05-12 18:53:55,435,0.51
+John Williams,216,2024-05-18 19:32:15,429,0.5
