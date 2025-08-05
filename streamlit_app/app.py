@@ -5,9 +5,13 @@ import altair as alt
 import os
 from pathlib import Path
 
+
 def fallback_to_csv(query_name):
     try:
-        path = Path("fallback_data") / f"{query_name}.csv"
+        # Get the current working directory and set the absolute path for the fallback_data folder
+        current_dir = Path(os.getcwd())
+        path = current_dir /  "streamlit_app" / "fallback_data" /f"{query_name}.csv"
+        
         return pd.read_csv(path)
     except FileNotFoundError:
         st.error(f"Fallback CSV for `{query_name}` not found.")
